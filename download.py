@@ -1,13 +1,12 @@
-from typing import Set, Optional, Dict, List, Tuple
-
+import argparse
+import configparser
 import json
 from multiprocessing import Process, Queue
-import traceback
-import configparser
-import argparse
-import sys
 import os
+import sys
 import time
+import traceback
+from typing import Dict, List, Optional, Set, Tuple
 
 import bloodcat
 import osu

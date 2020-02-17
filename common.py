@@ -1,10 +1,10 @@
+from multiprocessing import Queue
 import re
+from typing import Optional, Tuple
 
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from multiprocessing import Queue
-from typing import Tuple, Optional
 
 filename_re = re.compile('filename="(.*)"')
 path_special_chars = re.compile(r'[<>:"/\\|?*]')
