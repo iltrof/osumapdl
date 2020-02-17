@@ -41,6 +41,9 @@ download you freedom dive, blue zenith and uta:
 410162
 ```
 
+Also check out the `util` folder for scripts to help you
+create such lists of mapset IDs.
+
 Let's say you called your file `mapsets.txt` and put it
 in the same location as the script. Then you just have to run:
 
