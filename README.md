@@ -1,3 +1,5 @@
+! Very much WIP !
+
 # osu! map downloader
 
 A python script to bulk download maps. Though, if
@@ -26,7 +28,9 @@ and password into the corresponding fields. This is
 required if you want to download via osu! servers (if you
 don't want to or can't, set `osu = no` instead.)
 
-By default mapsets are downloaded without video (at least from the osu! website), but you can change that by setting `video = yes` in `dlconfig.ini`.
+By default mapsets are downloaded without video (at least
+from the osu! website), but you can change that by
+setting `video = yes` in `dlconfig.ini`.
 
 Second, create a file with the list of mapsets you want
 to download. The mapsets should be specified by their ID
@@ -51,7 +55,9 @@ in the same location as the script. Then you just have to run:
 python download.py mapsets.txt
 ```
 
-The mapsets will be saved into a `downloads` folder in the same location, though you can change the destination with:
+The mapsets will be saved into a `downloads` folder in
+the same location, though you can change the destination
+with:
 
 ```bash
 python download.py mapsets.txt -o "whatever-new-folder"
@@ -113,4 +119,6 @@ cookie are sent anywhere other than osu.ppy.sh. The part
 of the script that's responsible for osu! downloads is
 also completely separate from the bloodcat downloads.
 
-In other words, the script is equivalent to you going into private mode, logging into osu!, downloading some maps and closing the browser window.
+In other words, the script is equivalent to you going
+into private mode, logging into osu!, downloading some
+maps and closing the browser window.
