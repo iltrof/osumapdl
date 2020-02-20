@@ -44,10 +44,8 @@ class Downloader(common.Downloader):
 
         try:
             j = r.json()
-            r.close()
             return len(j) != 0
         except:
-            r.close()
             raise SearchError(f"bloodcat is sending unexpected responses.\n"
                               "This is probably a bug in the script and should be reported.")
 
@@ -74,28 +72,3 @@ class Downloader(common.Downloader):
             filename = common.path_special_chars.sub('_', filename)
 
         self.safe_save_to_file(dl.content, path.join(dest_dir, filename))
-
-        dl.close()
-
-
-def resolve_map_id(id: str) -> Optional[str]:
-    try:
-        r = common.retrying_session().get(f'https://bloodcat.com/osu/',
-                                          params={'q': id, 'c': 'b', 'mod': 'json'}, timeout=15)
-    except requests.ConnectionError:
-        raise ConnectionError(f"Couldn't connect to bloodcat.")
-
-    if not r.ok:
-        raise SearchError(f"{r.status_code} {r.reason}.\n"
-                          "This might be a bug, or you might just have to try again.")
-
-    try:
-        j = r.json()
-        r.close()
-        if len(j) == 0:
-            return None
-        return str(j[0]['id'])
-    except:
-        r.close()
-        raise SearchError(f"bloodcat is sending unexpected responses.\n"
-                          "This is probably a bug in the script and should be reported.")

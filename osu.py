@@ -61,7 +61,6 @@ def osu_session(username: str, password: str) -> requests.Session:
         raise LoginError(
             f"Couldn't log in to osu!: {login.status_code} {login.reason}.")
 
-    login.close()
     return s
 
 
@@ -98,32 +97,3 @@ class Downloader(common.Downloader):
             filename = common.path_special_chars.sub('_', filename[1])
 
         self.safe_save_to_file(dl.content, path.join(dest_dir, filename))
-
-        dl.close()
-
-
-def resolve_map_id(id: str) -> Optional[str]:
-    try:
-        r = common.retrying_session().get(f'https://osu.ppy.sh/beatmaps/{id}',
-                                          allow_redirects=False, timeout=15)
-    except requests.ConnectionError:
-        raise MapResolutionError(f"Couldn't connect to osu!\n"
-                                 "Check if the website even works and try again.")
-
-    if r.status_code == 404:
-        return None
-
-    if not r.ok:
-        raise MapResolutionError(f"{r.status_code} {r.reason}.\n"
-                                 "This might be a bug, or you might just have to try again.")
-    if r.status_code != 302:  # 302 FOUND
-        raise MapResolutionError(f"osu! didn't redirect properly: {r.status_code} {r.reason}.\n"
-                                 "This is probably a bug in the script and should be reported.")
-
-    url = r.headers['location']
-    r.close()
-    match = common.mapset_url_re.search(url)
-    if match is None:
-        raise MapResolutionError(f"osu! redirected to {url}, which the script didn't expect.\n"
-                                 "This is probably a bug in the script and should be reported.")
-    return match[1]
