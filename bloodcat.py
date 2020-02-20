@@ -73,8 +73,7 @@ class Downloader(common.Downloader):
             filename = parse.unquote(filename[1])
             filename = common.path_special_chars.sub('_', filename)
 
-        with open(path.join(dest_dir, filename), 'wb') as f:
-            f.write(dl.content)
+        self.safe_save_to_file(dl.content, path.join(dest_dir, filename))
 
         dl.close()
 

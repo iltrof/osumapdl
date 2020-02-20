@@ -1,7 +1,9 @@
 from multiprocessing import Queue
 import re
 from typing import Optional, Tuple
+import os
 
+import tempfile
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -27,6 +29,13 @@ def retrying_session(retries: int = 10, backoff: float = 0.2) -> requests.Sessio
 class Downloader:
     def download_mapset(self, id: str, dest_dir: str) -> None:
         pass
+
+    def safe_save_to_file(self, content: bytes, file: str) -> None:
+        temp = tempfile.NamedTemporaryFile(delete=False)
+        temp.write(content)
+        temp.close()
+
+        os.rename(temp.name, file)
 
     def download_mapsets(
         self,
