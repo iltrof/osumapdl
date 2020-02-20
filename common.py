@@ -17,6 +17,7 @@ map_url_re = re.compile(
 
 def retrying_session(retries: int = 10, backoff: float = 0.2) -> requests.Session:
     s = requests.Session()
+    s.headers['User-Agent'] = 'github.com/iltrof/osumapdl'
     retry = Retry(total=retries, read=retries,
                   connect=retries, backoff_factor=backoff,
                   status_forcelist=[429, 503])  # 429 TOO MANY REQUESTS, 503 SERVICE UNAVAILABLE

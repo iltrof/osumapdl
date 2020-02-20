@@ -18,6 +18,7 @@ map_url_re = re.compile(
 
 def retrying_session(retries: int = 3, backoff: float = 2.0) -> requests.Session:
     s = requests.Session()
+    s.headers['User-Agent'] = 'github.com/iltrof/osumapdl'
     retry = Retry(total=retries, read=retries,
                   connect=retries, backoff_factor=backoff,
                   status_forcelist=[429])  # 429 TOO MANY REQUESTS

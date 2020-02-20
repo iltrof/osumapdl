@@ -1,7 +1,7 @@
-import sys
 import re
+import sys
 import time
-from typing import Set, Optional
+from typing import Optional, Set
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -14,6 +14,7 @@ if len(sys.argv) not in [2, 3]:
 
 def retrying_session(retries: int = 3, backoff: float = 2.5) -> requests.Session:
     s = requests.Session()
+    s.headers['User-Agent'] = 'github.com/iltrof/osumapdl'
     retry = Retry(total=retries, read=retries,
                   connect=retries, backoff_factor=backoff,
                   status_forcelist=[429])  # 429 TOO MANY REQUESTS
