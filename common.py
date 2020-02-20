@@ -37,6 +37,9 @@ class Downloader:
     ) -> None:
         while True:
             id = in_queue.get()
+            if id == 'stop':
+                return
+
             try:
                 self.download_mapset(id, dest_dir)
             except Exception as e:
