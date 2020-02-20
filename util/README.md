@@ -2,7 +2,8 @@ Utility scripts to produce lists of mapset IDs.
 
 ## from-links.py
 
-Extracts links to beatmaps/beatmap sets from a file and creates a list of mapset IDs.
+Extracts links to beatmaps/beatmap sets from a file and
+creates a list of mapset IDs.
 
 ### Usage
 
@@ -27,4 +28,30 @@ This will be the output:
 292301
 1
 39804
+```
+
+## user-played.py
+
+Collects all of the mapsets a user has ever played.
+("All" refers to all mapsets with a leaderboard.)
+
+### Usage
+
+By username:
+
+```bash
+python user-links.py chocomint
+```
+
+Or by user ID:
+
+```bash
+python user-links.py 124493
+```
+
+By default saves to `user + .txt`, but you can provide
+the output file as an extra argument, e.g.:
+
+```bash
+python user-links.py chocomint cool-maps.txt
 ```
