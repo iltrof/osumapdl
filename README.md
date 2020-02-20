@@ -1,5 +1,3 @@
-! Very much WIP !
-
 # osu! map downloader
 
 A python script to bulk download maps. Though, if
