@@ -1,9 +1,9 @@
 from multiprocessing import Queue
-import re
-from typing import Optional, Tuple
 import os
-
+import re
 import tempfile
+from typing import Optional, Tuple
+
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry

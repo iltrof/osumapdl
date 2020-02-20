@@ -1,7 +1,7 @@
-import sys
-import re
 import codecs
-from typing import Set, Optional
+import re
+import sys
+from typing import Optional, Set
 
 import requests
 from requests.adapters import HTTPAdapter

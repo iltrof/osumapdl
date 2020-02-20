@@ -1,5 +1,4 @@
 from os import path
-from typing import Optional
 from urllib import parse
 
 import requests
