@@ -40,18 +40,18 @@ Collects all of the mapsets a user has ever played.
 By username:
 
 ```bash
-python user-links.py chocomint
+python user-played.py chocomint
 ```
 
 Or by user ID:
 
 ```bash
-python user-links.py 124493
+python user-played.py 124493
 ```
 
 By default saves to `user + .txt`, but you can provide
 the output file as an extra argument, e.g.:
 
 ```bash
-python user-links.py chocomint cool-maps.txt
+python user-played.py chocomint cool-maps.txt
 ```
