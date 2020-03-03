@@ -17,8 +17,10 @@ parser.add_argument('--cfg', dest='cfg_file', metavar='cfg-file',
                     action='store', help='config file to use', default='dlconfig.ini')
 parser.add_argument('ids_file', action='store',
                     help='file with IDs of mapsets you want downloaded')
-parser.add_argument('-o', '--out', action='store', dest='out_dir',
+parser.add_argument('-o', '--out', action='store', dest='out_dir', metavar='out-dir',
                     default='downloads', help='folder to download files into')
+parser.add_argument('--max-errors', action='store', dest='max_errors_in_a_row', type=int, metavar='N',
+                    default=5, help='errors in a row to tolerate before killing the script')
 
 osu_args = parser.add_argument_group('osu', 'osu-related arguments')
 osu_args.add_argument('--osu', dest='use_osu', action='store_true',
@@ -61,6 +63,7 @@ class Args:
         self.ids_file = ''
         self.out_dir = ''
         self.with_video = False
+        self.max_errors_in_a_row = 5
 
 
 class DownloadList:
@@ -153,6 +156,7 @@ def parse_args() -> Args:
     result = Args()
     result.ids_file = str(args.ids_file)
     result.out_dir = str(args.out_dir)
+    result.max_errors_in_a_row = args.max_errors_in_a_row
     result.use_osu = cfg.getboolean('osu', 'use', fallback=True)
     result.use_bloodcat = cfg.getboolean('bloodcat', 'use', fallback=True)
     result.osu_username = cfg.get('osu', 'username', fallback='')
@@ -321,10 +325,10 @@ def download(dl_list: DownloadList, args: Args, osu_dl: osu.Downloader, bloodcat
 
                 if worker == 'osu':
                     osu_busy = False
-                    osu_errors_in_a_row = False
+                    osu_errors_in_a_row = 0
                 elif worker == 'bloodcat':
                     bloodcat_busy = False
-                    bloodcat_errors_in_a_row = False
+                    bloodcat_errors_in_a_row = 0
 
                 fill_queues()
             elif worker == 'osu' and isinstance(error, osu.MapsetUnavailable):
@@ -358,7 +362,7 @@ def download(dl_list: DownloadList, args: Args, osu_dl: osu.Downloader, bloodcat
                     target=cooldown, args=(60*5, results_queue))
                 osu_cooldown_proc.start()
             elif worker == 'osu':  # and error is not None
-                if osu_errors_in_a_row < 3:
+                if osu_errors_in_a_row < args.max_errors_in_a_row:
                     osu_errors_in_a_row += 1
                     osu_queue.put(set_id)
                     continue
@@ -367,7 +371,7 @@ def download(dl_list: DownloadList, args: Args, osu_dl: osu.Downloader, bloodcat
                 cleanup()
                 return 1
             elif worker == 'bloodcat':  # and error is not None
-                if bloodcat_errors_in_a_row < 3:
+                if bloodcat_errors_in_a_row < args.max_errors_in_a_row:
                     bloodcat_errors_in_a_row += 1
                     bloodcat_queue.put(set_id)
                     continue

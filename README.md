@@ -61,6 +61,12 @@ with:
 python download.py mapsets.txt -o "whatever-new-folder"
 ```
 
+If you're having repeated problems with bloodcat, you can try raising the number of errors in a row after which the script will die. This is done via the `--max-errors` option:
+
+```bash
+python download.py mapsets.txt --max-errors 10
+```
+
 ## When things break
 
 The script, unfortunately, isn't fail-proof. If something
