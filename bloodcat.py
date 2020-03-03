@@ -1,9 +1,12 @@
 from os import path
+import time
 from urllib import parse
 
 import requests
 
 import common
+
+rate_limit_seconds = 5.0
 
 
 class ConnectionError(Exception):
@@ -29,6 +32,7 @@ def mapset_unavailable(r: requests.Response) -> bool:
 class Downloader(common.Downloader):
     def __init__(self) -> None:
         self.sess = common.retrying_session()
+        self.time_of_last_download = 0.0
 
     def check_availability(self, set_id: str) -> bool:
         try:
@@ -49,6 +53,11 @@ class Downloader(common.Downloader):
                               "This is probably a bug in the script and should be reported.")
 
     def download_mapset(self, id: str, dest_dir: str) -> None:
+        now = time.time()
+        if now - self.time_of_last_download < rate_limit_seconds:
+            time.sleep(rate_limit_seconds - (now - self.time_of_last_download))
+        self.time_of_last_download = time.time()
+
         print(f'[bloodcat] Downloading mapset #{id}')
         try:
             dl = self.sess.get(f'https://bloodcat.com/osu/s/{id}', timeout=15)
