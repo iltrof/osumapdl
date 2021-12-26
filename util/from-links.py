@@ -54,12 +54,12 @@ def resolve_map_id_osu(id: str) -> Optional[str]:
     return match[1]
 
 
-def resolve_map_id_bloodcat(id: str) -> Optional[str]:
+def resolve_map_id_chimu(id: str) -> Optional[str]:
     try:
-        r = retrying_session().get(f'https://bloodcat.com/osu/',
+        r = retrying_session().get(f'https://chimu.moe/',
                                    params={'q': id, 'c': 'b', 'mod': 'json'}, timeout=15)
     except requests.ConnectionError:
-        raise ConnectionError(f"Couldn't connect to bloodcat.")
+        raise ConnectionError(f"Couldn't connect to chimu.")
 
     if not r.ok:
         raise ConnectionError(f"{r.status_code} {r.reason}.\n"
@@ -71,25 +71,25 @@ def resolve_map_id_bloodcat(id: str) -> Optional[str]:
             return None
         return str(j[0]['id'])
     except:
-        raise RuntimeError(f"bloodcat is sending unexpected responses.\n"
+        raise RuntimeError(f"chimu is sending unexpected responses.\n"
                            "This is probably a bug in the script and should be reported.")
 
 
 def resolve_map_id(id: str) -> Optional[str]:
     set_id = None
-    bloodcat_error = None
+    chimu_error = None
     try:
-        set_id = resolve_map_id_bloodcat(id)
+        set_id = resolve_map_id_chimu(id)
     except Exception as e:
-        bloodcat_error = e
+        chimu_error = e
 
-    if bloodcat_error is None and set_id is not None:
+    if chimu_error is None and set_id is not None:
         return set_id
 
     try:
         return resolve_map_id_osu(id)
     except Exception as e:
-        raise RuntimeError(bloodcat_error, e)
+        raise RuntimeError(chimu_error, e)
 
 
 with codecs.open(sys.argv[1], 'r', 'utf-8') as f:
@@ -113,7 +113,7 @@ if len(maps) > 0:
             mapsets.add(set_id)
         except RuntimeError as e:
             print(f'\nFailed to look up map #{id}.\n'
-                  f'[bloodcat] {e.args[0][0]}\n'
+                  f'[chimu] {e.args[0][0]}\n'
                   f'[osu] {e.args[0][0]}')
             exit(1)
 

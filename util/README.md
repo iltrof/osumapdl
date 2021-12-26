@@ -55,3 +55,25 @@ the output file as an extra argument, e.g.:
 ```bash
 python user-played.py chocomint cool-maps.txt
 ```
+
+## get-reddit-posts.py
+
+Downloads all score posts and the corresponding reddit
+osu-bot commands into a file.
+
+### Usage
+
+```bash
+python get-reddit-posts.py output_file
+```
+
+## process.py
+
+Transform the data from get-reddit-posts.py to something
+readable.
+
+### Usage
+
+```bash
+python process.py input-file output-file
+```

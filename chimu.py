@@ -36,10 +36,10 @@ class Downloader(common.Downloader):
 
     def check_availability(self, set_id: str) -> bool:
         try:
-            r = self.sess.get('https://bloodcat.com/osu/',
+            r = self.sess.get('https://chimu.moe/',
                               params={'q': set_id, 'c': 's', 'mod': 'json'}, timeout=15)
         except requests.ConnectionError:
-            raise ConnectionError(f"Couldn't connect to bloodcat.")
+            raise ConnectionError(f"Couldn't connect to chimu.")
 
         if not r.ok:
             raise SearchError(f"{r.status_code} {r.reason}.\n"
@@ -49,21 +49,16 @@ class Downloader(common.Downloader):
             j = r.json()
             return len(j) != 0
         except:
-            raise SearchError(f"bloodcat is sending unexpected responses.\n"
+            raise SearchError(f"chimu is sending unexpected responses.\n"
                               "This is probably a bug in the script and should be reported.")
 
     def download_mapset(self, id: str, dest_dir: str) -> None:
-        now = time.time()
-        if now - self.time_of_last_download < rate_limit_seconds:
-            time.sleep(rate_limit_seconds - (now - self.time_of_last_download))
-        self.time_of_last_download = time.time()
-
-        print(f'[bloodcat] Downloading mapset #{id}')
+        print(f'[chimu] Downloading mapset #{id}')
         try:
-            dl = self.sess.get(f'https://bloodcat.com/osu/s/{id}', timeout=15)
+            dl = self.sess.get(f'https://api.chimu.moe/v1/download/{id}?n=1', timeout=15)
         except requests.ConnectionError as e:
             raise ConnectionError(
-                f"Couldn't connect to bloodcat when downloading mapset #{id}.")
+                f"Couldn't connect to chimu when downloading mapset #{id}.")
 
         if mapset_unavailable(dl):
             raise MapsetUnavailable(

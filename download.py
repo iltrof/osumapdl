@@ -8,7 +8,7 @@ import time
 import traceback
 from typing import Optional, Set, Tuple
 
-import bloodcat
+import chimu
 import messages
 import osu
 
@@ -32,17 +32,17 @@ osu_args.add_argument('--username', dest='osu_username', metavar='osu-name',
 osu_args.add_argument('--password', dest='osu_password', metavar='osu-pw',
                       action='store', help='your osu! password')
 osu_args.add_argument('--video', dest='with_video', action='store_true',
-                      help='downloads maps with video whenever possible (only for osu, not bloodcat)')
+                      help='downloads maps with video whenever possible (only for osu, not chimu)')
 osu_args.add_argument('--no-video', dest='with_video', action='store_false',
-                      help='downloads maps without video (only for osu, not bloodcat)')
+                      help='downloads maps without video (only for osu, not chimu)')
 
-bloodcat_args = parser.add_argument_group(
-    'bloodcat', 'bloodcat-related arguments')
-bloodcat_args.add_argument('--bloodcat', dest='use_bloodcat',
-                           action='store_true', help='enables downloading via bloodcat')
-bloodcat_args.add_argument('--no-bloodcat', dest='use_bloodcat',
-                           action='store_false', help='disables downloading via bloodcat')
-parser.set_defaults(use_osu=None, use_bloodcat=None, with_video=None)
+chimu_args = parser.add_argument_group(
+    'chimu', 'chimu-related arguments')
+chimu_args.add_argument('--chimu', dest='use_chimu',
+                           action='store_true', help='enables downloading via chimu')
+chimu_args.add_argument('--no-chimu', dest='use_chimu',
+                           action='store_false', help='disables downloading via chimu')
+parser.set_defaults(use_osu=None, use_chimu=None, with_video=None)
 
 
 def cooldown(secs: float, queue: 'Queue[Tuple[str, str, Optional[Exception]]]') -> None:
@@ -57,7 +57,7 @@ class FriendlyError(Exception):
 class Args:
     def __init__(self):
         self.use_osu = True
-        self.use_bloodcat = True
+        self.use_chimu = True
         self.osu_username = ''
         self.osu_password = ''
         self.ids_file = ''
@@ -67,38 +67,38 @@ class Args:
 
 
 class DownloadList:
-    def __init__(self, osu_and_bloodcat: Set[str], osu_only: Set[str], bloodcat_only: Set[str]):
-        self.osu_and_bloodcat = osu_and_bloodcat
+    def __init__(self, osu_and_chimu: Set[str], osu_only: Set[str], chimu_only: Set[str]):
+        self.osu_and_chimu = osu_and_chimu
         self.osu_only = osu_only
-        self.bloodcat_only = bloodcat_only
+        self.chimu_only = chimu_only
         self.resumed = False
 
     def remove_already_downloaded(self, already_dled: Set[str]):
-        self.osu_and_bloodcat -= already_dled
+        self.osu_and_chimu -= already_dled
         self.osu_only -= already_dled
-        self.bloodcat_only -= already_dled
+        self.chimu_only -= already_dled
 
     def next_for_osu(self) -> Optional[str]:
         if len(self.osu_only) > 0:
             return self.osu_only.pop()
-        elif len(self.osu_and_bloodcat) > 0:
-            return self.osu_and_bloodcat.pop()
+        elif len(self.osu_and_chimu) > 0:
+            return self.osu_and_chimu.pop()
         return None
 
-    def next_for_bloodcat(self) -> Optional[str]:
-        if len(self.bloodcat_only) > 0:
-            return self.bloodcat_only.pop()
-        elif len(self.osu_and_bloodcat) > 0:
-            return self.osu_and_bloodcat.pop()
+    def next_for_chimu(self) -> Optional[str]:
+        if len(self.chimu_only) > 0:
+            return self.chimu_only.pop()
+        elif len(self.osu_and_chimu) > 0:
+            return self.osu_and_chimu.pop()
         return None
 
     def __len__(self) -> int:
-        return len(self.osu_and_bloodcat) + len(self.osu_only) + len(self.bloodcat_only)
+        return len(self.osu_and_chimu) + len(self.osu_only) + len(self.chimu_only)
 
     def __isub__(self, other: Set[str]) -> 'DownloadList':
-        self.osu_and_bloodcat -= other
+        self.osu_and_chimu -= other
         self.osu_only -= other
-        self.bloodcat_only -= other
+        self.chimu_only -= other
         return self
 
 
@@ -122,7 +122,7 @@ def _main() -> int:
     args = parse_args()
     if args.use_osu and (args.osu_username == '' or args.osu_password == ''):
         raise FriendlyError(messages.missing_login_data)
-    if not args.use_osu and not args.use_bloodcat:
+    if not args.use_osu and not args.use_chimu:
         raise FriendlyError(messages.no_download_sources)
 
     os.makedirs(args.out_dir, exist_ok=True)
@@ -134,16 +134,16 @@ def _main() -> int:
         return 0
 
     osu_dl = new_osu_dl(args)
-    bloodcat_dl = new_bloodcat_dl(args)
+    chimu_dl = new_chimu_dl(args)
 
-    if args.use_osu and args.use_bloodcat:
-        print(messages.checking_bloodcat_availability)
-        update_bloodcat_availability(dl_list, bloodcat_dl)
+    if args.use_osu and args.use_chimu:
+        print(messages.checking_chimu_availability)
+        update_chimu_availability(dl_list, chimu_dl)
         write_resume_file(args.ids_file, dl_list)
 
     print('')
     print(messages.downloading_n_sets(len(dl_list)))
-    return download(dl_list, args, osu_dl, bloodcat_dl)
+    return download(dl_list, args, osu_dl, chimu_dl)
 
 
 def parse_args() -> Args:
@@ -158,14 +158,14 @@ def parse_args() -> Args:
     result.out_dir = str(args.out_dir)
     result.max_errors_in_a_row = args.max_errors_in_a_row
     result.use_osu = cfg.getboolean('osu', 'use', fallback=True)
-    result.use_bloodcat = cfg.getboolean('bloodcat', 'use', fallback=True)
+    result.use_chimu = cfg.getboolean('chimu', 'use', fallback=True)
     result.osu_username = cfg.get('osu', 'username', fallback='')
     result.osu_password = cfg.get('osu', 'password', fallback='')
     result.with_video = cfg.getboolean('osu', 'video', fallback=False)
     if args.use_osu is not None:
         result.use_osu = bool(args.use_osu)
-    if args.use_bloodcat is not None:
-        result.use_bloodcat = bool(args.use_bloodcat)
+    if args.use_chimu is not None:
+        result.use_chimu = bool(args.use_chimu)
     if args.osu_username is not None:
         result.osu_username = str(args.osu_username)
     if args.osu_password is not None:
@@ -187,8 +187,8 @@ def read_ids(ids_file: str) -> DownloadList:
     with open(ids_file) as f:
         ids = [line.strip() for line in f]
         return DownloadList(
-            osu_and_bloodcat={id for id in ids if id != ''},
-            osu_only=set(), bloodcat_only=set(),
+            osu_and_chimu={id for id in ids if id != ''},
+            osu_only=set(), chimu_only=set(),
         )
 
 
@@ -197,9 +197,9 @@ def read_resume_file(file: str) -> DownloadList:
         try:
             j = json.load(f)
             dl_list = DownloadList(
-                osu_and_bloodcat=set(j['set_ids']),
+                osu_and_chimu=set(j['set_ids']),
                 osu_only=set(j['osu_exc']),
-                bloodcat_only=set(j['bloodcat_exc']),
+                chimu_only=set(j['chimu_exc']),
             )
             dl_list.resumed = True
             return dl_list
@@ -221,26 +221,26 @@ def new_osu_dl(args: Args) -> osu.Downloader:
         raise FriendlyError(e)
 
 
-def new_bloodcat_dl(_: Args) -> bloodcat.Downloader:
-    return bloodcat.Downloader()
+def new_chimu_dl(_: Args) -> chimu.Downloader:
+    return chimu.Downloader()
 
 
-def update_bloodcat_availability(dl_list: DownloadList, bloodcat_dl: bloodcat.Downloader) -> None:
+def update_chimu_availability(dl_list: DownloadList, chimu_dl: chimu.Downloader) -> None:
     if dl_list.resumed:
         return
 
-    for i, set_id in enumerate(dl_list.osu_and_bloodcat):
-        print(f'{i+1} / {len(dl_list.osu_and_bloodcat)}', end='\r')
+    for i, set_id in enumerate(dl_list.osu_and_chimu):
+        print(f'{i+1} / {len(dl_list.osu_and_chimu)}', end='\r')
         try:
-            available = bloodcat_dl.check_availability(set_id)
+            available = chimu_dl.check_availability(set_id)
             if not available:
                 dl_list.osu_only.add(set_id)
-        except (bloodcat.ConnectionError, bloodcat.SearchError) as e:
+        except (chimu.ConnectionError, chimu.SearchError) as e:
             print('')
             raise FriendlyError(e)
 
     print('')
-    dl_list.osu_and_bloodcat -= dl_list.osu_only
+    dl_list.osu_and_chimu -= dl_list.osu_only
 
 
 def write_resume_file(ids_file: str, dl_list: DownloadList) -> None:
@@ -250,49 +250,49 @@ def write_resume_file(ids_file: str, dl_list: DownloadList) -> None:
     resume_file = ids_file + '.resume'
     with open(resume_file, 'w') as f:
         json.dump({
-            'set_ids': list(dl_list.osu_and_bloodcat),
+            'set_ids': list(dl_list.osu_and_chimu),
             'osu_exc': list(dl_list.osu_only),
-            'bloodcat_exc': list(dl_list.bloodcat_only),
+            'chimu_exc': list(dl_list.chimu_only),
         }, f)
 
     print(messages.created_resume_file(ids_file, resume_file))
 
 
-def download(dl_list: DownloadList, args: Args, osu_dl: osu.Downloader, bloodcat_dl: bloodcat.Downloader) -> int:
+def download(dl_list: DownloadList, args: Args, osu_dl: osu.Downloader, chimu_dl: chimu.Downloader) -> int:
     osu_queue: 'Queue[str]' = Queue(maxsize=1)
-    bloodcat_queue: 'Queue[str]' = Queue(maxsize=1)
+    chimu_queue: 'Queue[str]' = Queue(maxsize=1)
     results_queue: 'Queue[Tuple[str, str, Optional[Exception]]]' = Queue()
 
     osu_proc = Process()
-    bloodcat_proc = Process()
+    chimu_proc = Process()
     osu_cooldown_proc = Process()
 
     osu_busy = False
-    bloodcat_busy = False
+    chimu_busy = False
     osu_errors_in_a_row = 0
-    bloodcat_errors_in_a_row = 0
+    chimu_errors_in_a_row = 0
 
-    missing_on_osu = dl_list.bloodcat_only.copy()
-    missing_on_bloodcat = dl_list.osu_only.copy()
+    missing_on_osu = dl_list.chimu_only.copy()
+    missing_on_chimu = dl_list.osu_only.copy()
 
     def fill_queues():
-        nonlocal osu_busy, bloodcat_busy
+        nonlocal osu_busy, chimu_busy
         if args.use_osu and not osu_busy:
             item = dl_list.next_for_osu()
             if item is not None:
                 osu_busy = True
                 osu_queue.put(item)
-        if args.use_bloodcat and not bloodcat_busy:
-            item = dl_list.next_for_bloodcat()
+        if args.use_chimu and not chimu_busy:
+            item = dl_list.next_for_chimu()
             if item is not None:
-                bloodcat_busy = True
-                bloodcat_queue.put(item)
+                chimu_busy = True
+                chimu_queue.put(item)
 
     def cleanup():
         if args.use_osu:
             osu_queue.put('stop')
-        if args.use_bloodcat:
-            bloodcat_queue.put('stop')
+        if args.use_chimu:
+            chimu_queue.put('stop')
         if osu_cooldown_proc.is_alive():
             osu_cooldown_proc.kill()
 
@@ -302,11 +302,11 @@ def download(dl_list: DownloadList, args: Args, osu_dl: osu.Downloader, bloodcat
             'osu', args.out_dir, osu_queue, results_queue,
         ))
         osu_proc.start()
-    if args.use_bloodcat:
-        bloodcat_proc = Process(target=bloodcat_dl.download_mapsets, args=(
-            'bloodcat', args.out_dir, bloodcat_queue, results_queue,
+    if args.use_chimu:
+        chimu_proc = Process(target=chimu_dl.download_mapsets, args=(
+            'chimu', args.out_dir, chimu_queue, results_queue,
         ))
-        bloodcat_proc.start()
+        chimu_proc.start()
 
     fill_queues()
 
@@ -326,35 +326,35 @@ def download(dl_list: DownloadList, args: Args, osu_dl: osu.Downloader, bloodcat
                 if worker == 'osu':
                     osu_busy = False
                     osu_errors_in_a_row = 0
-                elif worker == 'bloodcat':
-                    bloodcat_busy = False
-                    bloodcat_errors_in_a_row = 0
+                elif worker == 'chimu':
+                    chimu_busy = False
+                    chimu_errors_in_a_row = 0
 
                 fill_queues()
             elif worker == 'osu' and isinstance(error, osu.MapsetUnavailable):
                 missing_on_osu.add(set_id)
-                if not args.use_bloodcat or set_id in missing_on_bloodcat:
+                if not args.use_chimu or set_id in missing_on_chimu:
                     print('[info]', error)
                     total -= 1
                 else:
-                    dl_list.bloodcat_only.add(set_id)
+                    dl_list.chimu_only.add(set_id)
 
                 osu_busy = False
                 fill_queues()
-            elif worker == 'bloodcat' and isinstance(error, bloodcat.MapsetUnavailable):
-                missing_on_bloodcat.add(set_id)
+            elif worker == 'chimu' and isinstance(error, chimu.MapsetUnavailable):
+                missing_on_chimu.add(set_id)
                 if not args.use_osu or set_id in missing_on_osu:
                     print('[info]', error)
                     total -= 1
                 else:
                     dl_list.osu_only.add(set_id)
 
-                bloodcat_busy = False
+                chimu_busy = False
                 fill_queues()
             elif worker == 'osu' and isinstance(error, osu.QuotaExceeded):
                 print(messages.download_limit_reached('five minutes'))
-                if args.use_bloodcat and set_id not in missing_on_bloodcat:
-                    dl_list.osu_and_bloodcat.add(set_id)
+                if args.use_chimu and set_id not in missing_on_chimu:
+                    dl_list.osu_and_chimu.add(set_id)
                 else:
                     dl_list.osu_only.add(set_id)
 
@@ -370,21 +370,21 @@ def download(dl_list: DownloadList, args: Args, osu_dl: osu.Downloader, bloodcat
                 print(f"[osu] Couldn't download mapset #{set_id}:\n{error}")
                 cleanup()
                 return 1
-            elif worker == 'bloodcat':  # and error is not None
-                if bloodcat_errors_in_a_row < args.max_errors_in_a_row:
-                    bloodcat_errors_in_a_row += 1
-                    bloodcat_queue.put(set_id)
+            elif worker == 'chimu':  # and error is not None
+                if chimu_errors_in_a_row < args.max_errors_in_a_row:
+                    chimu_errors_in_a_row += 1
+                    chimu_queue.put(set_id)
                     continue
 
                 print(
-                    f"[bloodcat] Couldn't download mapset #{set_id}:\n{error}")
+                    f"[chimu] Couldn't download mapset #{set_id}:\n{error}")
                 cleanup()
                 return 1
     except:
         if osu_proc.is_alive():
             osu_proc.kill()
-        if bloodcat_proc.is_alive():
-            bloodcat_proc.kill()
+        if chimu_proc.is_alive():
+            chimu_proc.kill()
         if osu_cooldown_proc.is_alive():
             osu_cooldown_proc.kill()
         raise

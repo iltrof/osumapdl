@@ -4,7 +4,7 @@ please provide both your username and your password.
 You can do that in the config file (dlconfig.ini).'''
 
 no_download_sources = '''\
-You've disabled both downloads via osu! and via bloodcat.
+You've disabled both downloads via osu! and via chimu.
 If you want to actually download anything, please
 enable at least one of the options.'''
 
@@ -29,8 +29,8 @@ If the script breaks, run it with {resume_file}
 instead of just {ids_file} to avoid long preparations.'''
 
 
-checking_bloodcat_availability = '''\
-[info] Checking which mapsets are unavailable on bloodcat...'''
+checking_chimu_availability = '''\
+[info] Checking which mapsets are unavailable on chimu...'''
 
 
 def downloading_n_sets(n: int) -> str:

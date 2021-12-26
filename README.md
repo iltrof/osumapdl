@@ -5,12 +5,11 @@ possible, you should prefer literally any other way of
 downloading large amounts of maps, such as map packs.
 
 Supports downloading both from the official osu! website,
-as well as bloodcat.
+as well as chimu.
 
 ## Installation
 
-Go to
-[releases](https://github.com/iltrof/osumapdl/releases),
+Code > Download ZIP,
 grab the source code and extract it somewhere.
 
 Prerequisites:
@@ -61,8 +60,8 @@ with:
 python download.py mapsets.txt -o "whatever-new-folder"
 ```
 
-If you're having repeated problems with bloodcat, you can
-try raising the number of connection errors in a row
+If you're having repeated problems with chimu, you can
+try raising the number of errors in a row
 after which the script will die. This is done via the
 `--max-errors` option:
 
@@ -80,9 +79,9 @@ issue](https://github.com/iltrof/osumapdl/issues).
 The script will also avoid downloading mapsets that have
 already been downloaded to the best of its ability.
 
-**Important** if you download both with osu! and bloodcat:
+**Important** if you download both with osu! and chimu:
 There is a slow-ish preparation phase where the script
-checks which maps are not available on bloodcat. Once
+checks which maps are not available on chimu. Once
 that preparation phase is over, the script creates a
 `.resume` file. For example, if your list of maps was
 called `mapsets.txt`, the script will create
@@ -98,9 +97,9 @@ the file itself. Alternatively, you can provide the same
 settings via command-line flags (run `python download.py --help` for a list).
 
 Besides the options described above under _Usage_, you
-have the ability to enable/disable osu!/bloodcat, either
+have the ability to enable/disable osu!/chimu, either
 in the config file or by passing
-`--osu`/`--no-osu`/`--bloodcat`/`--no-bloodcat` to the
+`--osu`/`--no-osu`/`--chimu`/`--no-chimu` to the
 script.
 
 Flags provided via the command line, of course, take
@@ -112,7 +111,7 @@ Obviously, you shouldn't enter your passwords into things
 you don't trust. Unfortunately, osu! requires you to be
 logged in to download maps from it, so you'll have to
 either look through the code or just trust the script.
-Alternatively, disable osu! downloads and use bloodcat
+Alternatively, disable osu! downloads and use chimu
 instead; it's not bad either.
 
 Your username & password are sent to
@@ -124,7 +123,7 @@ every request to download a map.
 Neither the username, nor the password, nor that unique
 cookie are sent anywhere other than osu.ppy.sh. The part
 of the script that's responsible for osu! downloads is
-also completely separate from the bloodcat downloads.
+also completely separate from the chimu downloads.
 
 In other words, the script is equivalent to you going
 into private mode, logging into osu!, downloading some
